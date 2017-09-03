@@ -12,38 +12,38 @@
 import Foundation
 
 public class ZStream {
-    private struct z_stream {
-        private var next_in : UnsafePointer<UInt8> = nil
-        private var avail_in : CUnsignedInt = 0
+    fileprivate struct z_stream {
+        fileprivate var next_in : UnsafePointer<UInt8>? = nil
+        fileprivate var avail_in : CUnsignedInt = 0
         private var total_in : CUnsignedLong = 0
         
-        private var next_out : UnsafePointer<UInt8> = nil
-        private var avail_out : CUnsignedInt = 0
+        fileprivate var next_out : UnsafePointer<UInt8>? = nil
+        fileprivate var avail_out : CUnsignedInt = 0
         private var total_out : CUnsignedLong = 0
         
-        private var msg : UnsafePointer<CChar> = nil
-        private var state : COpaquePointer = nil
+        private var msg : UnsafePointer<CChar>? = nil
+        private var state : OpaquePointer? = nil
         
-        private var zalloc : COpaquePointer = nil
-        private var zfree : COpaquePointer = nil
-        private var opaque : COpaquePointer = nil
+        private var zalloc : OpaquePointer? = nil
+        private var zfree : OpaquePointer? = nil
+        private var opaque : OpaquePointer? = nil
         
         private var data_type : CInt = 0
         private var adler : CUnsignedLong = 0
         private var reserved : CUnsignedLong = 0
     }
     
-    @asmname("zlibVersion") private static func zlibVersion() -> COpaquePointer
-    @asmname("deflateInit2_") private func deflateInit2(strm : UnsafeMutablePointer<Void>, level : CInt, method : CInt, windowBits : CInt, memLevel : CInt, strategy : CInt, version : COpaquePointer, stream_size : CInt) -> CInt
-    @asmname("deflateInit_") private func deflateInit(strm : UnsafeMutablePointer<Void>, level : CInt, version : COpaquePointer, stream_size : CInt) -> CInt
-    @asmname("deflateEnd") private func deflateEnd(strm : UnsafeMutablePointer<Void>) -> CInt
-    @asmname("deflate") private func deflate(strm : UnsafeMutablePointer<Void>, flush : CInt) -> CInt
-    @asmname("inflateInit2_") private func inflateInit2(strm : UnsafeMutablePointer<Void>, windowBits : CInt, version : COpaquePointer, stream_size : CInt) -> CInt
-    @asmname("inflateInit_") private func inflateInit(strm : UnsafeMutablePointer<Void>, version : COpaquePointer, stream_size : CInt) -> CInt
-    @asmname("inflate") private func inflate(strm : UnsafeMutablePointer<Void>, flush : CInt) -> CInt
-    @asmname("inflateEnd") private func inflateEnd(strm : UnsafeMutablePointer<Void>) -> CInt
+    @_silgen_name("zlibVersion") private static func zlibVersion() -> OpaquePointer
+    @_silgen_name("deflateInit2_") private func deflateInit2(strm : UnsafeMutableRawPointer, level : CInt, method : CInt, windowBits : CInt, memLevel : CInt, strategy : CInt, version : OpaquePointer, stream_size : CInt) -> CInt
+    @_silgen_name("deflateInit_") private func deflateInit(strm : UnsafeMutableRawPointer, level : CInt, version : OpaquePointer, stream_size : CInt) -> CInt
+    @_silgen_name("deflateEnd") private func deflateEnd(strm : UnsafeMutableRawPointer) -> CInt
+    @_silgen_name("deflate") private func deflate(strm : UnsafeMutableRawPointer, flush : CInt) -> CInt
+    @_silgen_name("inflateInit2_") private func inflateInit2(strm : UnsafeMutableRawPointer, windowBits : CInt, version : OpaquePointer, stream_size : CInt) -> CInt
+    @_silgen_name("inflateInit_") private func inflateInit(strm : UnsafeMutableRawPointer, version : OpaquePointer, stream_size : CInt) -> CInt
+    @_silgen_name("inflate") private func inflate(strm : UnsafeMutableRawPointer, flush : CInt) -> CInt
+    @_silgen_name("inflateEnd") private func inflateEnd(strm : UnsafeMutableRawPointer) -> CInt
     
-    private static var c_version : COpaquePointer = ZStream.zlibVersion()
+    private static var c_version : OpaquePointer = ZStream.zlibVersion()
     private(set) static var version : String = String(format: "%s", locale: nil, c_version)
     
     private func makeError(res : CInt) -> NSError? {
@@ -63,32 +63,33 @@ public class ZStream {
         return NSError(domain: "deflateswift", code: -1, userInfo: [NSLocalizedDescriptionKey:err])
     }
     
-    private var strm = z_stream()
-    private var deflater = true
+    fileprivate var strm = z_stream()
+    fileprivate var deflater = true
     private var initd = false
-    private var init2 = false
-    private var level = CInt(-1)
-    private var windowBits = CInt(15)
-    private var out = [UInt8](count: 5000, repeatedValue: 0)
+    fileprivate var init2 = false
+    fileprivate var level = CInt(-1)
+    fileprivate var windowBits = CInt(15)
+    private var out = [UInt8](repeating: 0, count: 5000)
     public init() { }
-    public func write(var bytes : [UInt8], flush: Bool) -> (bytes: [UInt8], err: NSError?){
+    public func write( bytes : [UInt8], flush: Bool) -> (bytes: [UInt8], err: NSError?){
+        var bytes = bytes
         var res : CInt
         if !initd {
             if deflater {
                 if init2 {
-                    res = deflateInit2(&strm, level: level, method: 8, windowBits: windowBits, memLevel: 8, strategy: 0, version: ZStream.c_version, stream_size: CInt(sizeof(z_stream)))
+                    res = deflateInit2(strm: &strm, level: level, method: 8, windowBits: windowBits, memLevel: 8, strategy: 0, version: ZStream.c_version, stream_size: CInt(MemoryLayout<z_stream>.size))
                 } else {
-                    res = deflateInit(&strm, level: level, version: ZStream.c_version, stream_size: CInt(sizeof(z_stream)))
+                    res = deflateInit(strm: &strm, level: level, version: ZStream.c_version, stream_size: CInt(MemoryLayout<z_stream>.size))
                 }
             } else {
                 if init2 {
-                    res = inflateInit2(&strm, windowBits: windowBits, version: ZStream.c_version, stream_size: CInt(sizeof(z_stream)))
+                    res = inflateInit2(strm: &strm, windowBits: windowBits, version: ZStream.c_version, stream_size: CInt(MemoryLayout<z_stream>.size))
                 } else {
-                    res = inflateInit(&strm, version: ZStream.c_version, stream_size: CInt(sizeof(z_stream)))
+                    res = inflateInit(strm: &strm, version: ZStream.c_version, stream_size: CInt(MemoryLayout<z_stream>.size))
                 }
             }
             if res != 0{
-                return ([UInt8](), makeError(res))
+                return ([UInt8](), makeError(res: res))
             }
             initd = true
         }
@@ -99,12 +100,12 @@ public class ZStream {
             strm.avail_out = CUnsignedInt(out.count)
             strm.next_out = &out+0
             if deflater {
-                res = deflate(&strm, flush: flush ? 1 : 0)
+                res = deflate(strm: &strm, flush: flush ? 1 : 0)
             } else {
-                res = inflate(&strm, flush: flush ? 1 : 0)
+                res = inflate(strm: &strm, flush: flush ? 1 : 0)
             }
             if res < 0 {
-                return ([UInt8](), makeError(res))
+                return ([UInt8](), makeError(res: res))
             }
             let have = out.count - Int(strm.avail_out)
             if have > 0 {
@@ -112,16 +113,16 @@ public class ZStream {
             }
         } while (strm.avail_out == 0 && res != 1)
         if strm.avail_in != 0 {
-            return ([UInt8](), makeError(-9999))
+            return ([UInt8](), makeError(res: -9999))
         }
         return (result, nil)
     }
     deinit{
         if initd{
             if deflater {
-                deflateEnd(&strm)
+                _ = deflateEnd(strm: &strm)
             } else {
-                inflateEnd(&strm)
+                _ = inflateEnd(strm: &strm)
             }
         }
     }
