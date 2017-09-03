@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
   s.source                = { :git => "https://github.com/TheNoim/DeflateSwift.git", :tag => "#{s.version}" }
   s.authors               = { 'Josh Baker' => 'joshbaker77@gmail.com' }
   s.social_media_url      = "https://twitter.com/tidwall"
-  s.ios.platform          = :ios, '8.0'
+  #s.ios.platform          = :ios, '8.0'
   s.ios.deployment_target = "8.0"
   s.osx.platform          = :osx, '10.9'
   s.osx.deployment_target = "10.9"
