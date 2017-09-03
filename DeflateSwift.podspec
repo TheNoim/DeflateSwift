@@ -2,9 +2,9 @@ Pod::Spec.new do |s|
   s.name                  = "DeflateSwift"
   s.version               = "0.0.7"
   s.summary               = "Simple interface for the deflate compression format in Swift."
-  s.homepage              = "https://github.com/tidwall/DeflateSwift"
+  s.homepage              = "https://github.com/TheNoim/DeflateSwift"
   s.license               = { :type => "Attribution License", :file => "LICENSE" }
-  s.source                = { :git => "https://github.com/tidwall/DeflateSwift.git", :tag => "#{s.version}" }
+  s.source                = { :git => "https://github.com/TheNoim/DeflateSwift.git", :tag => "#{s.version}" }
   s.authors               = { 'Josh Baker' => 'joshbaker77@gmail.com' }
   s.social_media_url      = "https://twitter.com/tidwall"
   s.ios.platform          = :ios, '8.0'
